@@ -445,7 +445,7 @@ img,input,select,textarea,button{max-width:100%}
       <div class="resumen-bloque">
         <div class="resumen-bloque-titulo">Totales orientativos del mes</div>
         <div class="resumen-item">
-          <span class="resumen-item-texto">Total cobros</span>
+          <span class="resumen-item-texto">Total cobros cobrados</span>
           <span class="resumen-item-importe" id="res-total-cobros">0,00 €</span>
         </div>
         <div class="resumen-item">
@@ -543,29 +543,41 @@ img,input,select,textarea,button{max-width:100%}
     return fechaLocalISO(d);
   }
 
+  function diaEnMesAnterior(dia) {
+    var d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);
+    var maxDia = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    d.setDate(Math.min(dia, maxDia));
+    return fechaLocalISO(d);
+  }
+
   function datosDemo() {
+    var now = Date.now();
     return {
       gastos: [
-        { id:'g1', fecha: diasAtras(1), concepto:'Cable RZ1-K 6mm — Obra Fernández', categoria:'Material',    importe:87.40,  estadoDocumento:'Ticket adjunto' },
-        { id:'g2', fecha: diasAtras(1), concepto:'Gasoil furgoneta',                  categoria:'Combustible', importe:54.00,  estadoDocumento:'Ticket adjunto' },
-        { id:'g3', fecha: diasAtras(2), concepto:'Fusibles y bases — almacén',        categoria:'Material',    importe:31.20,  estadoDocumento:'Falta factura'  },
-        { id:'g4', fecha: diasAtras(4), concepto:'Disco amoladora',                   categoria:'Herramienta', importe:18.50,  estadoDocumento:'Falta ticket'   },
-        { id:'g5', fecha: diasAtras(5), concepto:'Tubería cobre 22mm — Obra Ramos',   categoria:'Material',    importe:112.60, estadoDocumento:'Ticket adjunto' }
+        { id:'g1', fecha: diasAtras(1),            concepto:'Gasoil furgoneta',                         categoria:'Combustible', importe:54.00,  estadoDocumento:'Ticket adjunto', createdAt: now-1000 },
+        { id:'g2', fecha: diaEnMesAnterior(25),    concepto:'Cable RZ1-K 6mm — Obra Fernández', categoria:'Material',    importe:87.40,  estadoDocumento:'Ticket adjunto', createdAt: now-2000 },
+        { id:'g3', fecha: diaEnMesAnterior(20),    concepto:'Fusibles y bases — almén',         categoria:'Material',    importe:31.20,  estadoDocumento:'Falta factura',  createdAt: now-3000 },
+        { id:'g4', fecha: diaEnMesAnterior(15),    concepto:'Disco amoladora',                          categoria:'Herramienta', importe:18.50,  estadoDocumento:'Falta ticket',   createdAt: now-4000 },
+        { id:'g5', fecha: diaEnMesAnterior(10),    concepto:'Tubería cobre 22mm — Obra Ramos', categoria:'Material',    importe:112.60, estadoDocumento:'Ticket adjunto', createdAt: now-5000 },
+        { id:'g6', fecha: diaEnMesAnterior(5),     concepto:'Interruptor automático 10A',           categoria:'Material',    importe:24.80,  estadoDocumento:'Ticket adjunto', createdAt: now-6000 }
       ],
       cobros: [
-        { id:'c1', fecha: diasAtras(1), cliente:'García Renovables',   concepto:'Instalación fotovoltaica 3kW',  importe:1800.00, formaCobro:'Transferencia', estadoCobro:'Cobrado'              },
-        { id:'c2', fecha: diasAtras(2), cliente:'Comunidad Robles',    concepto:'Revisión cuadro eléctrico',     importe:195.00,  formaCobro:'Efectivo',       estadoCobro:'Cobrado'              },
-        { id:'c3', fecha: diasAtras(3), cliente:'Ayto. Cacabelos',     concepto:'Mantenimiento climatización',   importe:340.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de cobro'   },
-        { id:'c4', fecha: diasAtras(4), cliente:'López Distribución',  concepto:'Instalación split oficina',     importe:520.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de factura' }
+        { id:'c1', fecha: diasAtras(1),            cliente:'García Renovables',  concepto:'Instalación fotovoltaica 3kW',    importe:1800.00, formaCobro:'Transferencia', estadoCobro:'Cobrado',              createdAt: now-1000 },
+        { id:'c2', fecha: diaEnMesAnterior(22),    cliente:'Comunidad Robles',        concepto:'Revisión cuadro eléctrico',  importe:195.00,  formaCobro:'Efectivo',      estadoCobro:'Cobrado',              createdAt: now-2000 },
+        { id:'c3', fecha: diaEnMesAnterior(18),    cliente:'Ayto. Cacabelos',         concepto:'Mantenimiento climatización',     importe:340.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de cobro',   createdAt: now-3000 },
+        { id:'c4', fecha: diaEnMesAnterior(12),    cliente:'López Distribución', concepto:'Instalación split oficina',  importe:520.00,  formaCobro:'Transferencia', estadoCobro:'Cobrado',              createdAt: now-4000 },
+        { id:'c5', fecha: diaEnMesAnterior(7),     cliente:'Ramos Agrícola',    concepto:'Revisión fotovoltaica',           importe:380.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de factura', createdAt: now-5000 }
       ],
       material: [
-        { id:'m1', descripcion:'Interruptor diferencial 40A',  paratrabajo:'Obra Fernández',               urgente:true,  estado:'Pendiente' },
-        { id:'m2', descripcion:'Sonda temperatura exterior',   paratrabajo:'Revisión fotovoltaica Ramos',  urgente:false, estado:'Pendiente' },
-        { id:'m3', descripcion:'Válvula de esfera 1/2"',       paratrabajo:'Stock general',                urgente:false, estado:'Pendiente' }
+        { id:'m1', descripcion:'Interruptor diferencial 40A',  paratrabajo:'Obra Fernández',              urgente:false, estado:'Pendiente' },
+        { id:'m2', descripcion:'Sonda temperatura exterior',   paratrabajo:'Revisión fotovoltaica Ramos', urgente:false, estado:'Pendiente' },
+        { id:'m3', descripcion:'Válvula de esfera 1/2"',  paratrabajo:'Stock general',                    urgente:false, estado:'Pendiente' }
       ],
       trabajos: [
-        { id:'t1', cliente:'Ramos Agrícola',  descripcion:'Revisión instalación fotovoltaica', importeEstimado:380.00,   fecha: diasAtras(3), estado:'Pendiente' },
-        { id:'t2', cliente:'Martínez Hogar',  descripcion:'Instalación caldera condensación',  importeEstimado:1200.00,  fecha: diasAtras(5), estado:'Pendiente' }
+        { id:'t1', cliente:'Martínez Hogar', descripcion:'Instalación caldera condensación', importeEstimado:1200.00, fecha: diasAtras(2),         estado:'Pendiente', createdAt: now-1000 },
+        { id:'t2', cliente:'Ramos Agrícola', descripcion:'Revisión instalación fotovoltaica', importeEstimado:380.00,  fecha: diaEnMesAnterior(20), estado:'Pendiente', createdAt: now-2000 }
       ]
     };
   }
@@ -621,7 +633,8 @@ img,input,select,textarea,button{max-width:100%}
 
   function parseImporte(v) {
     if(!v) return NaN;
-    var s = String(v).replace(',','.');
+    var s = String(v).trim();
+    if(s.indexOf(',') !== -1) { s = s.replace(/\./g,'').replace(',','.'); }
     return parseFloat(s);
   }
 
@@ -662,6 +675,11 @@ img,input,select,textarea,button{max-width:100%}
   function classeEstadoItem(v) {
     if(v==='Pendiente') return 'estado-pendiente';
     return 'estado-neutro';
+  }
+
+  function sortByFechaDesc(a, b) {
+    if(a.fecha !== b.fecha) return b.fecha.localeCompare(a.fecha);
+    return (b.createdAt || 0) - (a.createdAt || 0);
   }
 
   /* ============================================================
@@ -723,9 +741,10 @@ img,input,select,textarea,button{max-width:100%}
     resEl.className = 'balance-resultado-valor' + (resultado>0?' positivo':resultado<0?' negativo':' neutro');
 
     var numTrabajos    = estado.trabajos.filter(function(t){ return t.fecha===h && t.estado==='Pendiente'; }).length;
-    var numDocs        = estado.gastos.filter(function(g){ return g.fecha===h && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); }).length;
+    var numDocs        = estado.gastos.filter(function(g){ return g.fecha===h && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); }).length
+                       + estado.cobros.filter(function(c){ return c.fecha===h && c.estadoCobro==='Pendiente de factura'; }).length;
     var numMatUrgente  = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; }).length;
-    var numCobrosPend  = estado.cobros.filter(function(c){ return c.fecha===h && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura'); }).length;
+    var numCobrosPend  = estado.cobros.filter(function(c){ return c.fecha===h && c.estadoCobro==='Pendiente de cobro'; }).length;
 
     document.getElementById('alerta-trabajos-num').textContent  = numTrabajos;
     document.getElementById('alerta-documentos-num').textContent = numDocs;
@@ -749,7 +768,7 @@ img,input,select,textarea,button{max-width:100%}
       return;
     }
     var html = '';
-    estado.gastos.slice().sort(function(a,b){ return b.fecha.localeCompare(a.fecha); }).forEach(function(g){
+    estado.gastos.slice().sort(sortByFechaDesc).forEach(function(g){
       html += '<div class="registro-tarjeta">';
       html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(g.concepto)+'</span><span class="registro-importe">'+formatEur(g.importe)+'</span></div>';
       html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(g.fecha)+' &middot; '+esc(g.categoria)+'</span><span class="registro-estado '+classeEstadoDoc(g.estadoDocumento)+'">'+esc(g.estadoDocumento)+'</span></div>';
@@ -768,7 +787,7 @@ img,input,select,textarea,button{max-width:100%}
       return;
     }
     var html = '';
-    estado.cobros.slice().sort(function(a,b){ return b.fecha.localeCompare(a.fecha); }).forEach(function(c){
+    estado.cobros.slice().sort(sortByFechaDesc).forEach(function(c){
       html += '<div class="registro-tarjeta">';
       html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(c.cliente)+' &mdash; '+esc(c.concepto)+'</span><span class="registro-importe">'+formatEur(c.importe)+'</span></div>';
       html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(c.fecha)+' &middot; '+esc(c.formaCobro)+'</span><span class="registro-estado '+classeEstadoCobro(c.estadoCobro)+'">'+esc(c.estadoCobro)+'</span></div>';
@@ -787,20 +806,21 @@ img,input,select,textarea,button{max-width:100%}
 
   function renderListaMaterial() {
     var lista = document.getElementById('lista-material');
-    if(!estado.material.length){
+    var pendientes = estado.material.filter(function(m){ return m.estado !== 'Comprado'; });
+    pendientes.sort(function(a,b){ return (b.urgente?1:0) - (a.urgente?1:0); });
+    if(!pendientes.length){
       lista.innerHTML = '<div class="lista-vacia">Sin material pendiente.</div>';
       return;
     }
     var html = '';
-    estado.material.forEach(function(m){
-      var resuelto = m.estado === 'Comprado';
-      html += '<div class="registro-tarjeta'+(resuelto?' resuelto':'')+'">';
+    pendientes.forEach(function(m){
+      html += '<div class="registro-tarjeta">';
       html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(m.descripcion)+'</span>';
-      if(m.urgente && !resuelto) html += '<span class="registro-estado estado-error">Urgente</span>';
+      if(m.urgente) html += '<span class="registro-estado estado-error">Urgente</span>';
       html += '</div>';
       if(m.paratrabajo) html += '<div class="registro-meta" style="margin-top:4px;font-size:11px;color:#9CA3AF">Para: '+esc(m.paratrabajo)+'</div>';
-      html += '<div class="registro-fila-secundaria" style="margin-top:6px"><span class="registro-estado '+classeEstadoItem(m.estado)+'">'+esc(m.estado)+'</span>';
-      if(!resuelto) html += '<button class="btn btn-secundario btn-sm" data-mat-id="'+m.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar comprado</button>';
+      html += '<div class="registro-fila-secundaria" style="margin-top:6px"><span class="registro-estado estado-pendiente">Pendiente</span>';
+      html += '<button class="btn btn-secundario btn-sm" data-mat-id="'+m.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar comprado</button>';
       html += '</div>';
       html += '</div>';
     });
@@ -812,17 +832,18 @@ img,input,select,textarea,button{max-width:100%}
 
   function renderListaTrabajos() {
     var lista = document.getElementById('lista-trabajos');
-    if(!estado.trabajos.length){
+    var pendientes = estado.trabajos.filter(function(t){ return t.estado !== 'Facturado'; });
+    pendientes.sort(sortByFechaDesc);
+    if(!pendientes.length){
       lista.innerHTML = '<div class="lista-vacia">Sin trabajos pendientes de facturar.</div>';
       return;
     }
     var html = '';
-    estado.trabajos.forEach(function(t){
-      var resuelto = t.estado === 'Facturado';
-      html += '<div class="registro-tarjeta'+(resuelto?' resuelto':'')+'">';
+    pendientes.forEach(function(t){
+      html += '<div class="registro-tarjeta">';
       html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(t.cliente)+' &mdash; '+esc(t.descripcion)+'</span><span class="registro-importe">'+formatEur(t.importeEstimado)+'</span></div>';
-      html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(t.fecha)+'</span><span class="registro-estado '+classeEstadoItem(t.estado)+'">'+esc(t.estado)+'</span></div>';
-      if(!resuelto) html += '<div class="registro-accion"><button class="btn btn-secundario btn-sm" data-trab-id="'+t.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar facturado</button></div>';
+      html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(t.fecha)+'</span><span class="registro-estado estado-pendiente">Pendiente</span></div>';
+      html += '<div class="registro-accion"><button class="btn btn-secundario btn-sm" data-trab-id="'+t.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar facturado</button></div>';
       html += '</div>';
     });
     lista.innerHTML = html;
@@ -836,6 +857,7 @@ img,input,select,textarea,button{max-width:100%}
     guardar();
     renderListaMaterial();
     renderHoy();
+    if(pantallaActual==='resumen') renderResumen();
   }
 
   function marcarTrabajoFacturado(id) {
@@ -843,6 +865,7 @@ img,input,select,textarea,button{max-width:100%}
     guardar();
     renderListaTrabajos();
     renderHoy();
+    if(pantallaActual==='resumen') renderResumen();
   }
 
   /* ============================================================
@@ -895,27 +918,31 @@ img,input,select,textarea,button{max-width:100%}
     balEl.className = 'balance-resultado-valor' + (balance>0?' positivo':balance<0?' negativo':' neutro');
     balEl.style.fontSize = '18px';
 
-    // Documentación pendiente
-    var docsPend = estado.gastos.filter(function(g){
+    // Documentación pendiente (gastos sin ticket/factura + cobros pendientes de factura)
+    var docsPendGastos = estado.gastos.filter(function(g){
       return mesStr(g.fecha)===mes && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura');
-    }).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
+    }).map(function(g){ return { fecha:g.fecha, texto:g.concepto+' ['+g.estadoDocumento+']', importe:g.importe }; });
+    var docsPendCobros = estado.cobros.filter(function(c){
+      return mesStr(c.fecha)===mes && c.estadoCobro==='Pendiente de factura';
+    }).map(function(c){ return { fecha:c.fecha, texto:c.cliente+' — '+c.concepto+' [Pendiente de factura]', importe:c.importe }; });
+    var docsPend = docsPendGastos.concat(docsPendCobros).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
     var docsEl = document.getElementById('res-docs-pendientes');
     docsEl.innerHTML = docsPend.length
-      ? docsPend.map(function(g){
-          return '<div class="resumen-item"><span class="resumen-item-texto">'+fechaLegible(g.fecha)+' &mdash; '+esc(g.concepto)+'</span><span class="resumen-item-importe">'+formatEur(g.importe)+'</span></div>';
+      ? docsPend.map(function(d){
+          return '<div class="resumen-item"><span class="resumen-item-texto">'+fechaLegible(d.fecha)+' &mdash; '+esc(d.texto)+'</span><span class="resumen-item-importe">'+formatEur(d.importe)+'</span></div>';
         }).join('')
       : '<div class="resumen-vacio">Sin documentación pendiente.</div>';
 
-    // Cobros pendientes
+    // Cobros pendientes (solo estado Pendiente de cobro)
     var cobrosPend = estado.cobros.filter(function(c){
-      return mesStr(c.fecha)===mes && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura');
+      return mesStr(c.fecha)===mes && c.estadoCobro==='Pendiente de cobro';
     }).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
     var cobrosEl = document.getElementById('res-cobros-pendientes');
     cobrosEl.innerHTML = cobrosPend.length
       ? cobrosPend.map(function(c){
           return '<div class="resumen-item"><span class="resumen-item-texto">'+esc(c.cliente)+' &mdash; '+esc(c.concepto)+'</span><span class="resumen-item-importe">'+formatEur(c.importe)+'</span></div>';
         }).join('')
-      : '<div class="resumen-vacio">Sin cobros pendientes.</div>';
+      : '<div class="resumen-vacio">Sin cobros pendientes de cobro.</div>';
 
     // Trabajos pendientes
     var trabajosPend = estado.trabajos.filter(function(t){
@@ -972,17 +999,18 @@ img,input,select,textarea,button{max-width:100%}
 
   function generarTextoResumen(mes) {
     var totalCobros = estado.cobros
-      .filter(function(c){ return mesStr(c.fecha)===mes; })
+      .filter(function(c){ return mesStr(c.fecha)===mes && (c.estadoCobro==='Cobrado'||c.estadoCobro==='Anticipo recibido'); })
       .reduce(function(s,c){ return s+c.importe; }, 0);
     var totalGastos = estado.gastos
       .filter(function(g){ return mesStr(g.fecha)===mes; })
       .reduce(function(s,g){ return s+g.importe; }, 0);
     var balance = totalCobros - totalGastos;
 
-    var docsPend     = estado.gastos.filter(function(g){ return mesStr(g.fecha)===mes && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); });
-    var cobrosPend   = estado.cobros.filter(function(c){ return mesStr(c.fecha)===mes && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura'); });
-    var trabajosPend = estado.trabajos.filter(function(t){ return mesStr(t.fecha)===mes && t.estado==='Pendiente'; });
-    var matUrgente   = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; });
+    var docsPendGastos = estado.gastos.filter(function(g){ return mesStr(g.fecha)===mes && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); });
+    var docsPendCobros = estado.cobros.filter(function(c){ return mesStr(c.fecha)===mes && c.estadoCobro==='Pendiente de factura'; });
+    var cobrosPend     = estado.cobros.filter(function(c){ return mesStr(c.fecha)===mes && c.estadoCobro==='Pendiente de cobro'; });
+    var trabajosPend   = estado.trabajos.filter(function(t){ return mesStr(t.fecha)===mes && t.estado==='Pendiente'; });
+    var matUrgente     = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; });
 
     var lineas = [];
     lineas.push('TÉCNICO AL DÍA — Resumen orientativo');
@@ -992,22 +1020,23 @@ img,input,select,textarea,button{max-width:100%}
     lineas.push('Generado: ' + fechaLegible(hoy()));
     lineas.push('');
     lineas.push('--- TOTALES ORIENTATIVOS ---');
-    lineas.push('Total cobros del mes:   ' + formatEur(totalCobros));
+    lineas.push('Total cobros cobrados:  ' + formatEur(totalCobros));
     lineas.push('Total gastos del mes:   ' + formatEur(totalGastos));
     lineas.push('Balance orientativo:    ' + formatEur(balance));
     lineas.push('');
     lineas.push('--- DOCUMENTACIÓN PENDIENTE ---');
-    if(!docsPend.length) {
+    if(!docsPendGastos.length && !docsPendCobros.length) {
       lineas.push('Sin documentación pendiente.');
     } else {
-      docsPend.forEach(function(g){ lineas.push(fechaLegible(g.fecha) + ' — ' + g.concepto + ' — ' + formatEur(g.importe) + ' [' + g.estadoDocumento + ']'); });
+      docsPendGastos.forEach(function(g){ lineas.push(fechaLegible(g.fecha) + ' — ' + g.concepto + ' — ' + formatEur(g.importe) + ' [' + g.estadoDocumento + ']'); });
+      docsPendCobros.forEach(function(c){ lineas.push(fechaLegible(c.fecha) + ' — ' + c.cliente + ' — ' + c.concepto + ' — ' + formatEur(c.importe) + ' [Pendiente de factura]'); });
     }
     lineas.push('');
-    lineas.push('--- COBROS PENDIENTES ---');
+    lineas.push('--- COBROS PENDIENTES DE COBRO ---');
     if(!cobrosPend.length) {
-      lineas.push('Sin cobros pendientes.');
+      lineas.push('Sin cobros pendientes de cobro.');
     } else {
-      cobrosPend.forEach(function(c){ lineas.push(fechaLegible(c.fecha) + ' — ' + c.cliente + ' — ' + c.concepto + ' — ' + formatEur(c.importe) + ' [' + c.estadoCobro + ']'); });
+      cobrosPend.forEach(function(c){ lineas.push(fechaLegible(c.fecha) + ' — ' + c.cliente + ' — ' + c.concepto + ' — ' + formatEur(c.importe)); });
     }
     lineas.push('');
     lineas.push('--- TRABAJOS PENDIENTES DE FACTURAR ---');
@@ -1078,7 +1107,7 @@ img,input,select,textarea,button{max-width:100%}
       document.getElementById('gasto-error').classList.add('visible');
       return;
     }
-    estado.gastos.push({ id:genId(), fecha:fecha, concepto:concepto, categoria:cat, importe:importe, estadoDocumento:estadoD });
+    estado.gastos.push({ id:genId(), fecha:fecha, concepto:concepto, categoria:cat, importe:importe, estadoDocumento:estadoD, createdAt:Date.now() });
     guardar();
     cerrarFormGasto();
     renderGastos();
@@ -1135,7 +1164,7 @@ img,input,select,textarea,button{max-width:100%}
       document.getElementById('cobro-error').classList.add('visible');
       return;
     }
-    estado.cobros.push({ id:genId(), fecha:fecha, cliente:cliente, concepto:concepto, importe:importe, formaCobro:forma, estadoCobro:estadoC });
+    estado.cobros.push({ id:genId(), fecha:fecha, cliente:cliente, concepto:concepto, importe:importe, formaCobro:forma, estadoCobro:estadoC, createdAt:Date.now() });
     guardar();
     cerrarFormCobro();
     renderCobros();
@@ -1232,7 +1261,7 @@ img,input,select,textarea,button{max-width:100%}
       document.getElementById('trab-error').classList.add('visible');
       return;
     }
-    estado.trabajos.push({ id:genId(), cliente:cliente, descripcion:desc, importeEstimado:importe, fecha:fecha, estado:estadoT });
+    estado.trabajos.push({ id:genId(), cliente:cliente, descripcion:desc, importeEstimado:importe, fecha:fecha, estado:estadoT, createdAt:Date.now() });
     guardar();
     cerrarFormTrabajo();
     renderListaTrabajos();
