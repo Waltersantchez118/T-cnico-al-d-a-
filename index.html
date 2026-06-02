@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Técnico al Día</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#E8ECF0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;color:#1A1A1A;-webkit-text-size-adjust:100%}
+img,input,select,textarea,button{max-width:100%}
+
+/* APP SHELL */
+#app{width:100%;max-width:430px;height:100vh;height:100dvh;margin:0 auto;display:flex;flex-direction:column;background:#F4F6F8;box-shadow:0 0 40px rgba(0,0,0,0.12);overflow:hidden}
+
+/* CABECERA — position relative, parte del flujo flex */
+.cabecera{position:relative;flex-shrink:0;left:auto;transform:none;max-width:none;background:#1E3A5F;padding-top:calc(env(safe-area-inset-top,0px) + 12px);padding-bottom:12px;padding-left:16px;padding-right:16px;display:flex;align-items:center;justify-content:space-between;z-index:10}
+.cabecera-titulo{font-size:16px;font-weight:700;color:#FFFFFF;letter-spacing:0.02em}
+.cabecera-subtitulo{font-size:10px;color:#8BAFD4;letter-spacing:0.06em;text-transform:uppercase;margin-top:1px}
+.cabecera-izq{display:flex;flex-direction:column}
+.btn-restaurar{background:none;border:none;color:rgba(255,255,255,0.6);font-size:12px;cursor:pointer;padding:8px 0 8px 12px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:flex-end;font-family:inherit;letter-spacing:0.02em;transition:color 0.15s}
+.btn-restaurar:active{color:#FFFFFF}
+
+/* CONTENIDO — crece y hace scroll internamente */
+#contenido{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px}
+
+/* NAVEGACION INFERIOR — position relative, parte del flujo flex */
+.nav-inferior{position:relative;flex-shrink:0;left:auto;transform:none;max-width:none;background:#1E3A5F;display:flex;align-items:stretch;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+.nav-tab{flex:1;background:none;border:none;color:#8BAFD4;font-size:10px;font-family:inherit;letter-spacing:0.07em;text-transform:uppercase;cursor:pointer;padding:10px 4px 2px;display:flex;flex-direction:column;align-items:center;position:relative;min-height:48px;transition:color 0.15s}
+.nav-tab::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:transparent;border-radius:0 0 2px 2px;transition:background 0.15s}
+.nav-tab.activo{color:#FFFFFF}
+.nav-tab.activo::before{background:#FFFFFF}
+
+/* PANTALLAS */
+.pantalla{display:none}
+.pantalla.activa{display:block}
+
+/* SECCIONES */
+.seccion{margin-bottom:20px}
+.seccion-titulo{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6B7280;margin-bottom:10px}
+
+/* BLOQUE BALANCE */
+.balance-bloque{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:16px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.balance-fila{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0}
+.balance-fila+.balance-fila{border-top:1px solid #F1F5F9}
+.balance-etiqueta{font-size:13px;color:#6B7280}
+.balance-valor{font-size:16px;font-weight:700;color:#1A1A1A}
+.balance-separador{border:none;border-top:2px solid #E2E8F0;margin:10px 0}
+.balance-resultado-fila{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 4px}
+.balance-resultado-etiqueta{font-size:13px;font-weight:600;color:#1A1A1A}
+.balance-resultado-valor{font-size:22px;font-weight:700}
+.balance-resultado-valor.positivo{color:#2E7D5B}
+.balance-resultado-valor.negativo{color:#B91C1C}
+.balance-resultado-valor.neutro{color:#1E3A5F}
+.balance-nota{font-size:11px;color:#9CA3AF;margin-top:8px;line-height:1.4}
+
+/* ALERTAS */
+.alertas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.alerta-item{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05);cursor:pointer;transition:border-color 0.15s}
+.alerta-item:active{border-color:#1E3A5F}
+.alerta-numero{font-size:26px;font-weight:700;color:#1E3A5F;line-height:1}
+.alerta-etiqueta{font-size:11px;color:#6B7280;margin-top:4px;line-height:1.3}
+.alerta-item.alerta-atencion .alerta-numero{color:#B45309}
+.alerta-item.alerta-error .alerta-numero{color:#B91C1C}
+
+/* ACCESOS RAPIDOS */
+.accesos-rapidos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+
+/* BOTONES */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:10px 16px;border-radius:6px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity 0.15s,background 0.15s;letter-spacing:0.01em;text-align:center;width:100%}
+.btn:active{opacity:0.82}
+.btn-primario{background:#1E3A5F;color:#FFFFFF}
+.btn-secundario{background:transparent;border:1.5px solid #1E3A5F;color:#1E3A5F}
+.btn-texto{background:transparent;border:none;color:#6B7280;font-weight:400}
+.btn-sm{min-height:36px;font-size:12px;padding:6px 12px}
+
+/* GRUPO BOTONES FORMULARIO */
+.form-botones{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-top:16px}
+
+/* FORMULARIOS */
+.form-panel{background:#FFFFFF;border:1px solid #CBD5E1;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+.form-titulo{font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#1E3A5F;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #E2E8F0}
+.form-grupo{margin-bottom:12px}
+.form-label{display:block;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:#6B7280;margin-bottom:5px}
+.form-input,.form-select{width:100%;padding:10px 12px;border:1px solid #CBD5E1;border-radius:6px;font-family:inherit;font-size:16px;color:#1A1A1A;background:#FFFFFF;appearance:none;-webkit-appearance:none;line-height:1.4}
+.form-input:focus,.form-select:focus{outline:none;border-color:#1E3A5F;box-shadow:0 0 0 3px rgba(30,58,95,0.1)}
+.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.form-fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-error{background:#FEE2E2;color:#B91C1C;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:12px;display:none}
+.form-error.visible{display:block}
+
+/* LISTAS DE REGISTROS */
+.lista-vacia{text-align:center;color:#9CA3AF;font-size:13px;padding:24px 16px;font-style:italic}
+
+/* TARJETA REGISTRO */
+.registro-tarjeta{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:12px 14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.registro-tarjeta.resuelto{background:#F9FAFB;border-color:#E2E8F0;opacity:0.65}
+.registro-fila-principal{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.registro-concepto{font-size:14px;font-weight:600;color:#1A1A1A;word-break:break-word;overflow-wrap:anywhere;flex:1;min-width:0;line-height:1.35}
+.registro-importe{font-size:15px;font-weight:700;color:#1A1A1A;white-space:nowrap;flex-shrink:0}
+.registro-fila-secundaria{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;flex-wrap:wrap}
+.registro-meta{font-size:11px;color:#9CA3AF;flex:1;min-width:0;word-break:break-word;overflow-wrap:anywhere}
+.registro-estado{display:inline-block;font-size:10px;font-weight:600;letter-spacing:0.05em;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.estado-ok{background:#D1FAE5;color:#2E7D5B}
+.estado-pendiente{background:#FEF3C7;color:#B45309}
+.estado-neutro{background:#E2E8F0;color:#6B7280}
+.estado-error{background:#FEE2E2;color:#B91C1C}
+.registro-accion{margin-top:10px}
+.registro-tarjeta.resuelto .registro-concepto{text-decoration:line-through;text-decoration-color:#9CA3AF}
+
+/* PENDIENTES HEADER */
+.pendientes-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pendientes-header .btn{width:auto;min-height:36px;font-size:12px;padding:6px 14px}
+
+/* RESUMEN */
+.resumen-selector{margin-bottom:16px}
+.resumen-bloque{background:#FFFFFF;border:1px solid #E2E8F0;border-radius:8px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.resumen-bloque-titulo{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6B7280;margin-bottom:10px}
+.resumen-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:1px solid #F1F5F9}
+.resumen-item:first-of-type{border-top:none}
+.resumen-item-texto{font-size:12px;color:#6B7280;flex:1;word-break:break-word;overflow-wrap:anywhere;padding-right:8px;line-height:1.35}
+.resumen-item-importe{font-size:13px;font-weight:700;color:#1A1A1A;white-space:nowrap;flex-shrink:0}
+.resumen-vacio{font-size:12px;color:#9CA3AF;font-style:italic;padding:4px 0}
+.btn-copiar{margin-top:8px}
+
+/* FALLBACK CLIPBOARD */
+.clipboard-fallback{display:none;margin-top:14px;background:#F8FAFC;border:1px solid #CBD5E1;border-radius:8px;padding:14px}
+.clipboard-fallback.visible{display:block}
+.clipboard-fallback-titulo{font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#6B7280;margin-bottom:8px}
+.clipboard-fallback-nota{font-size:12px;color:#9CA3AF;margin-top:8px;line-height:1.4}
+.clipboard-textarea{width:100%;min-height:180px;padding:10px 12px;border:1px solid #CBD5E1;border-radius:6px;font-family:inherit;font-size:13px;color:#1A1A1A;background:#FFFFFF;resize:vertical;line-height:1.5}
+
+/* AVISO LEGAL */
+.aviso-legal{font-size:11px;color:#9CA3AF;text-align:center;line-height:1.5;padding:12px 8px;margin-top:4px}
+
+/* NOTIFICACION FLOTANTE */
+.notif-flotante{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1E3A5F;color:#FFFFFF;border-radius:6px;padding:10px 22px;font-size:13px;font-weight:600;z-index:999;pointer-events:none;opacity:0;transition:opacity 0.25s;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+.notif-flotante.visible{opacity:1}
+
+/* CABECERA PANTALLA */
+.pantalla-cabecera{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.pantalla-cabecera-titulo{font-size:18px;font-weight:700;color:#1A1A1A}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- CABECERA -->
+  <header class="cabecera">
+    <div class="cabecera-izq">
+      <span class="cabecera-titulo">Técnico al Día</span>
+      <span class="cabecera-subtitulo">Bierzo Instalaciones</span>
+    </div>
+    <button class="btn-restaurar" id="btnRestaurar">Restaurar demo</button>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main id="contenido">
+
+    <!-- PANTALLA HOY -->
+    <section class="pantalla activa" id="pantalla-hoy">
+      <div class="seccion">
+        <div class="seccion-titulo">Balance orientativo del día</div>
+        <div class="balance-bloque">
+          <div class="balance-fila">
+            <span class="balance-etiqueta">Cobros del día</span>
+            <span class="balance-valor" id="hoy-cobros">0,00 €</span>
+          </div>
+          <div class="balance-fila">
+            <span class="balance-etiqueta">Gastos del día</span>
+            <span class="balance-valor" id="hoy-gastos">0,00 €</span>
+          </div>
+          <hr class="balance-separador">
+          <div class="balance-resultado-fila">
+            <span class="balance-resultado-etiqueta">Resultado orientativo</span>
+            <span class="balance-resultado-valor neutro" id="hoy-resultado">0,00 €</span>
+          </div>
+          <p class="balance-nota">Dato orientativo. No es contabilidad oficial.</p>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">Pendientes y alertas</div>
+        <div class="alertas-grid">
+          <div class="alerta-item alerta-atencion" id="alerta-trabajos" data-nav="pendientes">
+            <div class="alerta-numero" id="alerta-trabajos-num">0</div>
+            <div class="alerta-etiqueta">Trabajos sin facturar</div>
+          </div>
+          <div class="alerta-item alerta-error" id="alerta-documentos" data-nav="gastos">
+            <div class="alerta-numero" id="alerta-documentos-num">0</div>
+            <div class="alerta-etiqueta">Documentos pendientes</div>
+          </div>
+          <div class="alerta-item alerta-atencion" id="alerta-material" data-nav="pendientes">
+            <div class="alerta-numero" id="alerta-material-num">0</div>
+            <div class="alerta-etiqueta">Material urgente</div>
+          </div>
+          <div class="alerta-item alerta-atencion" id="alerta-cobros" data-nav="cobros">
+            <div class="alerta-numero" id="alerta-cobros-num">0</div>
+            <div class="alerta-etiqueta">Cobros pendientes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">Acceso rápido</div>
+        <div class="accesos-rapidos">
+          <button class="btn btn-primario" id="btnHoyAniadirGasto">Añadir gasto</button>
+          <button class="btn btn-secundario" id="btnHoyAniadirCobro">Añadir cobro</button>
+        </div>
+      </div>
+
+      <div class="aviso-legal">Demo orientativa. No sustituye asesoramiento fiscal, contable ni una gestoría profesional.</div>
+    </section>
+
+    <!-- PANTALLA GASTOS -->
+    <section class="pantalla" id="pantalla-gastos">
+      <div class="pantalla-cabecera">
+        <span class="pantalla-cabecera-titulo">Gastos</span>
+        <button class="btn btn-primario" style="width:auto;min-height:38px;font-size:13px;padding:8px 16px" id="btnAniadirGasto">Añadir gasto</button>
+      </div>
+
+      <div id="form-gasto-panel" class="form-panel" style="display:none">
+        <div class="form-titulo">Nuevo gasto</div>
+        <div class="form-fila2">
+          <div class="form-grupo">
+            <label class="form-label" for="gasto-fecha">Fecha</label>
+            <input class="form-input" type="date" id="gasto-fecha">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="gasto-categoria">Categoría</label>
+            <select class="form-select" id="gasto-categoria">
+              <option value="">Seleccionar</option>
+              <option value="Material">Material</option>
+              <option value="Combustible">Combustible</option>
+              <option value="Herramienta">Herramienta</option>
+              <option value="Subcontrata">Subcontrata</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label" for="gasto-concepto">Concepto</label>
+          <input class="form-input" type="text" id="gasto-concepto" placeholder="Descripción del gasto">
+        </div>
+        <div class="form-fila2">
+          <div class="form-grupo">
+            <label class="form-label" for="gasto-importe">Importe (€)</label>
+            <input class="form-input" type="text" inputmode="decimal" id="gasto-importe" placeholder="0,00">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="gasto-estado-doc">Documento</label>
+            <select class="form-select" id="gasto-estado-doc">
+              <option value="">Seleccionar</option>
+              <option value="Ticket adjunto">Ticket adjunto</option>
+              <option value="Falta ticket">Falta ticket</option>
+              <option value="Falta factura">Falta factura</option>
+              <option value="Revisado">Revisado</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-error" id="gasto-error">Completa todos los campos obligatorios antes de guardar.</div>
+        <div class="form-botones">
+          <button class="btn btn-primario" id="btnGuardarGasto">Guardar</button>
+          <button class="btn btn-secundario" id="btnLimpiarGasto">Limpiar</button>
+          <button class="btn btn-texto" id="btnCancelarGasto">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">Registros</div>
+        <div id="lista-gastos"></div>
+      </div>
+    </section>
+
+    <!-- PANTALLA COBROS -->
+    <section class="pantalla" id="pantalla-cobros">
+      <div class="pantalla-cabecera">
+        <span class="pantalla-cabecera-titulo">Cobros</span>
+        <button class="btn btn-primario" style="width:auto;min-height:38px;font-size:13px;padding:8px 16px" id="btnAniadirCobro">Añadir cobro</button>
+      </div>
+
+      <div id="form-cobro-panel" class="form-panel" style="display:none">
+        <div class="form-titulo">Nuevo cobro</div>
+        <div class="form-fila2">
+          <div class="form-grupo">
+            <label class="form-label" for="cobro-fecha">Fecha</label>
+            <input class="form-input" type="date" id="cobro-fecha">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="cobro-forma">Forma de cobro</label>
+            <select class="form-select" id="cobro-forma">
+              <option value="">Seleccionar</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Bizum">Bizum</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label" for="cobro-cliente">Cliente</label>
+          <input class="form-input" type="text" id="cobro-cliente" placeholder="Nombre del cliente">
+        </div>
+        <div class="form-grupo">
+          <label class="form-label" for="cobro-concepto">Concepto</label>
+          <input class="form-input" type="text" id="cobro-concepto" placeholder="Descripción del trabajo o servicio">
+        </div>
+        <div class="form-fila2">
+          <div class="form-grupo">
+            <label class="form-label" for="cobro-importe">Importe (€)</label>
+            <input class="form-input" type="text" inputmode="decimal" id="cobro-importe" placeholder="0,00">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="cobro-estado">Estado</label>
+            <select class="form-select" id="cobro-estado">
+              <option value="">Seleccionar</option>
+              <option value="Cobrado">Cobrado</option>
+              <option value="Pendiente de cobro">Pendiente de cobro</option>
+              <option value="Pendiente de factura">Pendiente de factura</option>
+              <option value="Anticipo recibido">Anticipo recibido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-error" id="cobro-error">Completa todos los campos obligatorios antes de guardar.</div>
+        <div class="form-botones">
+          <button class="btn btn-primario" id="btnGuardarCobro">Guardar</button>
+          <button class="btn btn-secundario" id="btnLimpiarCobro">Limpiar</button>
+          <button class="btn btn-texto" id="btnCancelarCobro">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="seccion">
+        <div class="seccion-titulo">Registros</div>
+        <div id="lista-cobros"></div>
+      </div>
+    </section>
+
+    <!-- PANTALLA PENDIENTES -->
+    <section class="pantalla" id="pantalla-pendientes">
+      <div class="pantalla-cabecera">
+        <span class="pantalla-cabecera-titulo">Pendientes</span>
+      </div>
+
+      <!-- SUB: MATERIAL -->
+      <div class="seccion">
+        <div class="pendientes-header">
+          <div class="seccion-titulo" style="margin-bottom:0">Material pendiente</div>
+          <button class="btn btn-primario btn-sm" id="btnAniadirMaterial">Añadir material</button>
+        </div>
+
+        <div id="form-material-panel" class="form-panel" style="display:none;margin-top:10px">
+          <div class="form-titulo">Nuevo material</div>
+          <div class="form-grupo">
+            <label class="form-label" for="mat-descripcion">Descripción</label>
+            <input class="form-input" type="text" id="mat-descripcion" placeholder="Material o referencia">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="mat-trabajo">Para trabajo / cliente (opcional)</label>
+            <input class="form-input" type="text" id="mat-trabajo" placeholder="Dejar en blanco si no aplica">
+          </div>
+          <div class="form-fila2">
+            <div class="form-grupo">
+              <label class="form-label" for="mat-urgente">Urgencia</label>
+              <select class="form-select" id="mat-urgente">
+                <option value="">Seleccionar</option>
+                <option value="true">Urgente</option>
+                <option value="false">No urgente</option>
+              </select>
+            </div>
+            <div class="form-grupo">
+              <label class="form-label" for="mat-estado">Estado</label>
+              <select class="form-select" id="mat-estado">
+                <option value="Pendiente">Pendiente</option>
+                <option value="Comprado">Comprado</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-error" id="mat-error">Completa todos los campos obligatorios antes de guardar.</div>
+          <div class="form-botones">
+            <button class="btn btn-primario" id="btnGuardarMaterial">Guardar</button>
+            <button class="btn btn-secundario" id="btnLimpiarMaterial">Limpiar</button>
+            <button class="btn btn-texto" id="btnCancelarMaterial">Cancelar</button>
+          </div>
+        </div>
+
+        <div id="lista-material"></div>
+      </div>
+
+      <!-- SUB: TRABAJOS -->
+      <div class="seccion">
+        <div class="pendientes-header">
+          <div class="seccion-titulo" style="margin-bottom:0">Trabajos sin facturar</div>
+          <button class="btn btn-primario btn-sm" id="btnAniadirTrabajo">Añadir trabajo</button>
+        </div>
+
+        <div id="form-trabajo-panel" class="form-panel" style="display:none;margin-top:10px">
+          <div class="form-titulo">Nuevo trabajo pendiente</div>
+          <div class="form-fila2">
+            <div class="form-grupo">
+              <label class="form-label" for="trab-fecha">Fecha del trabajo</label>
+              <input class="form-input" type="date" id="trab-fecha">
+            </div>
+            <div class="form-grupo">
+              <label class="form-label" for="trab-importe">Importe estimado (€)</label>
+              <input class="form-input" type="text" inputmode="decimal" id="trab-importe" placeholder="0,00">
+            </div>
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="trab-cliente">Cliente</label>
+            <input class="form-input" type="text" id="trab-cliente" placeholder="Nombre del cliente">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="trab-descripcion">Descripción del trabajo</label>
+            <input class="form-input" type="text" id="trab-descripcion" placeholder="Tipo de instalación o servicio">
+          </div>
+          <div class="form-grupo">
+            <label class="form-label" for="trab-estado">Estado</label>
+            <select class="form-select" id="trab-estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Facturado">Facturado</option>
+            </select>
+          </div>
+          <div class="form-error" id="trab-error">Completa todos los campos obligatorios antes de guardar.</div>
+          <div class="form-botones">
+            <button class="btn btn-primario" id="btnGuardarTrabajo">Guardar</button>
+            <button class="btn btn-secundario" id="btnLimpiarTrabajo">Limpiar</button>
+            <button class="btn btn-texto" id="btnCancelarTrabajo">Cancelar</button>
+          </div>
+        </div>
+
+        <div id="lista-trabajos"></div>
+      </div>
+    </section>
+
+    <!-- PANTALLA RESUMEN -->
+    <section class="pantalla" id="pantalla-resumen">
+      <div class="pantalla-cabecera">
+        <span class="pantalla-cabecera-titulo">Resumen</span>
+      </div>
+
+      <div class="seccion resumen-selector">
+        <label class="form-label" for="resumen-mes">Mes</label>
+        <select class="form-select" id="resumen-mes" style="margin-top:5px"></select>
+      </div>
+
+      <div class="resumen-bloque">
+        <div class="resumen-bloque-titulo">Totales orientativos del mes</div>
+        <div class="resumen-item">
+          <span class="resumen-item-texto">Total cobros</span>
+          <span class="resumen-item-importe" id="res-total-cobros">0,00 €</span>
+        </div>
+        <div class="resumen-item">
+          <span class="resumen-item-texto">Total gastos</span>
+          <span class="resumen-item-importe" id="res-total-gastos">0,00 €</span>
+        </div>
+        <hr class="balance-separador" style="margin:8px 0">
+        <div class="balance-resultado-fila" style="padding:4px 0 2px">
+          <span class="balance-resultado-etiqueta" style="font-size:13px">Balance orientativo</span>
+          <span class="balance-resultado-valor" id="res-balance" style="font-size:18px">0,00 €</span>
+        </div>
+        <p class="balance-nota">Dato orientativo para revisión interna o gestoría. No es contabilidad oficial.</p>
+      </div>
+
+      <div class="resumen-bloque">
+        <div class="resumen-bloque-titulo">Documentación pendiente</div>
+        <div id="res-docs-pendientes"></div>
+      </div>
+
+      <div class="resumen-bloque">
+        <div class="resumen-bloque-titulo">Cobros pendientes</div>
+        <div id="res-cobros-pendientes"></div>
+      </div>
+
+      <div class="resumen-bloque">
+        <div class="resumen-bloque-titulo">Trabajos sin facturar</div>
+        <div id="res-trabajos-pendientes"></div>
+      </div>
+
+      <div class="resumen-bloque">
+        <div class="resumen-bloque-titulo">Material urgente pendiente</div>
+        <div id="res-material-urgente"></div>
+      </div>
+
+      <button class="btn btn-primario btn-copiar" id="btnCopiarResumen">Copiar resumen para gestoría</button>
+
+      <!-- FALLBACK CLIPBOARD -->
+      <div class="clipboard-fallback" id="clipboardFallback">
+        <div class="clipboard-fallback-titulo">Resumen generado</div>
+        <textarea class="clipboard-textarea" id="clipboardTexto" readonly></textarea>
+        <p class="clipboard-fallback-nota">No se pudo copiar automáticamente. Puedes copiar el texto desde el recuadro.</p>
+      </div>
+
+      <div class="aviso-legal">Demo orientativa. No sustituye asesoramiento fiscal, contable ni una gestoría profesional.</div>
+    </section>
+
+  </main>
+
+  <!-- NAVEGACION INFERIOR -->
+  <nav class="nav-inferior">
+    <button class="nav-tab activo" data-pantalla="hoy">Hoy</button>
+    <button class="nav-tab" data-pantalla="gastos">Gastos</button>
+    <button class="nav-tab" data-pantalla="cobros">Cobros</button>
+    <button class="nav-tab" data-pantalla="pendientes">Pendientes</button>
+    <button class="nav-tab" data-pantalla="resumen">Resumen</button>
+  </nav>
+
+  <!-- NOTIFICACION FLOTANTE -->
+  <div class="notif-flotante" id="notifFlotante"></div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     CLAVES LOCALSTORAGE
+  ============================================================ */
+  var KEYS = {
+    gastos:   'tad_v1_gastos',
+    cobros:   'tad_v1_cobros',
+    material: 'tad_v1_material',
+    trabajos: 'tad_v1_trabajos'
+  };
+
+  /* ============================================================
+     DATOS DEMO INICIALES
+  ============================================================ */
+  function pad2(n) {
+    return n < 10 ? '0' + n : '' + n;
+  }
+
+  function fechaLocalISO(d) {
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  function hoy() {
+    return fechaLocalISO(new Date());
+  }
+
+  function diasAtras(n) {
+    var d = new Date();
+    d.setDate(d.getDate() - n);
+    return fechaLocalISO(d);
+  }
+
+  function datosDemo() {
+    return {
+      gastos: [
+        { id:'g1', fecha: diasAtras(1), concepto:'Cable RZ1-K 6mm — Obra Fernández', categoria:'Material',    importe:87.40,  estadoDocumento:'Ticket adjunto' },
+        { id:'g2', fecha: diasAtras(1), concepto:'Gasoil furgoneta',                  categoria:'Combustible', importe:54.00,  estadoDocumento:'Ticket adjunto' },
+        { id:'g3', fecha: diasAtras(2), concepto:'Fusibles y bases — almacén',        categoria:'Material',    importe:31.20,  estadoDocumento:'Falta factura'  },
+        { id:'g4', fecha: diasAtras(4), concepto:'Disco amoladora',                   categoria:'Herramienta', importe:18.50,  estadoDocumento:'Falta ticket'   },
+        { id:'g5', fecha: diasAtras(5), concepto:'Tubería cobre 22mm — Obra Ramos',   categoria:'Material',    importe:112.60, estadoDocumento:'Ticket adjunto' }
+      ],
+      cobros: [
+        { id:'c1', fecha: diasAtras(1), cliente:'García Renovables',   concepto:'Instalación fotovoltaica 3kW',  importe:1800.00, formaCobro:'Transferencia', estadoCobro:'Cobrado'              },
+        { id:'c2', fecha: diasAtras(2), cliente:'Comunidad Robles',    concepto:'Revisión cuadro eléctrico',     importe:195.00,  formaCobro:'Efectivo',       estadoCobro:'Cobrado'              },
+        { id:'c3', fecha: diasAtras(3), cliente:'Ayto. Cacabelos',     concepto:'Mantenimiento climatización',   importe:340.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de cobro'   },
+        { id:'c4', fecha: diasAtras(4), cliente:'López Distribución',  concepto:'Instalación split oficina',     importe:520.00,  formaCobro:'Transferencia', estadoCobro:'Pendiente de factura' }
+      ],
+      material: [
+        { id:'m1', descripcion:'Interruptor diferencial 40A',  paratrabajo:'Obra Fernández',               urgente:true,  estado:'Pendiente' },
+        { id:'m2', descripcion:'Sonda temperatura exterior',   paratrabajo:'Revisión fotovoltaica Ramos',  urgente:false, estado:'Pendiente' },
+        { id:'m3', descripcion:'Válvula de esfera 1/2"',       paratrabajo:'Stock general',                urgente:false, estado:'Pendiente' }
+      ],
+      trabajos: [
+        { id:'t1', cliente:'Ramos Agrícola',  descripcion:'Revisión instalación fotovoltaica', importeEstimado:380.00,   fecha: diasAtras(3), estado:'Pendiente' },
+        { id:'t2', cliente:'Martínez Hogar',  descripcion:'Instalación caldera condensación',  importeEstimado:1200.00,  fecha: diasAtras(5), estado:'Pendiente' }
+      ]
+    };
+  }
+
+  /* ============================================================
+     ESTADO EN MEMORIA
+  ============================================================ */
+  var estado = { gastos:[], cobros:[], material:[], trabajos:[] };
+
+  function cargar() {
+    try { estado.gastos   = JSON.parse(localStorage.getItem(KEYS.gastos))   || []; } catch(e){ estado.gastos=[]; }
+    try { estado.cobros   = JSON.parse(localStorage.getItem(KEYS.cobros))   || []; } catch(e){ estado.cobros=[]; }
+    try { estado.material = JSON.parse(localStorage.getItem(KEYS.material)) || []; } catch(e){ estado.material=[]; }
+    try { estado.trabajos = JSON.parse(localStorage.getItem(KEYS.trabajos)) || []; } catch(e){ estado.trabajos=[]; }
+  }
+
+  function guardar() {
+    try {
+      localStorage.setItem(KEYS.gastos,   JSON.stringify(estado.gastos));
+      localStorage.setItem(KEYS.cobros,   JSON.stringify(estado.cobros));
+      localStorage.setItem(KEYS.material, JSON.stringify(estado.material));
+      localStorage.setItem(KEYS.trabajos, JSON.stringify(estado.trabajos));
+    } catch(e){}
+  }
+
+  function restaurarDemoData() {
+    try {
+      localStorage.removeItem(KEYS.gastos);
+      localStorage.removeItem(KEYS.cobros);
+      localStorage.removeItem(KEYS.material);
+      localStorage.removeItem(KEYS.trabajos);
+    } catch(e){}
+    var d = datosDemo();
+    estado.gastos   = d.gastos;
+    estado.cobros   = d.cobros;
+    estado.material = d.material;
+    estado.trabajos = d.trabajos;
+    guardar();
+  }
+
+  /* ============================================================
+     UTILIDADES
+  ============================================================ */
+  function genId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  }
+
+  function formatEur(n) {
+    var num = parseFloat(n);
+    if(isNaN(num)) return '0,00 €';
+    return num.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+  }
+
+  function parseImporte(v) {
+    if(!v) return NaN;
+    var s = String(v).replace(',','.');
+    return parseFloat(s);
+  }
+
+  function mesStr(fecha) {
+    return fecha ? fecha.slice(0,7) : '';
+  }
+
+  function fechaLegible(f) {
+    if(!f) return '';
+    var p = f.split('-');
+    if(p.length < 3) return f;
+    return p[2]+'/'+p[1]+'/'+p[0];
+  }
+
+  function mesLegible(ym) {
+    if(!ym) return '';
+    var p = ym.split('-');
+    var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    return meses[parseInt(p[1],10)-1] + ' ' + p[0];
+  }
+
+  function mesActual() {
+    return hoy().slice(0,7);
+  }
+
+  function classeEstadoDoc(v) {
+    if(v==='Ticket adjunto'||v==='Revisado') return 'estado-ok';
+    if(v==='Falta ticket'||v==='Falta factura') return 'estado-error';
+    return 'estado-neutro';
+  }
+
+  function classeEstadoCobro(v) {
+    if(v==='Cobrado'||v==='Anticipo recibido') return 'estado-ok';
+    if(v==='Pendiente de cobro'||v==='Pendiente de factura') return 'estado-pendiente';
+    return 'estado-neutro';
+  }
+
+  function classeEstadoItem(v) {
+    if(v==='Pendiente') return 'estado-pendiente';
+    return 'estado-neutro';
+  }
+
+  /* ============================================================
+     NOTIFICACIÓN FLOTANTE
+  ============================================================ */
+  var notifTimer = null;
+  function mostrarNotif(texto) {
+    var el = document.getElementById('notifFlotante');
+    el.textContent = texto;
+    el.classList.add('visible');
+    if(notifTimer) clearTimeout(notifTimer);
+    notifTimer = setTimeout(function(){
+      el.classList.remove('visible');
+    }, 2500);
+  }
+
+  /* ============================================================
+     NAVEGACIÓN
+  ============================================================ */
+  var pantallaActual = 'hoy';
+
+  function navegar(nombre) {
+    document.querySelectorAll('.nav-tab').forEach(function(t){
+      t.classList.toggle('activo', t.dataset.pantalla === nombre);
+    });
+    document.querySelectorAll('.pantalla').forEach(function(p){
+      p.classList.toggle('activa', p.id === 'pantalla-' + nombre);
+    });
+    pantallaActual = nombre;
+    document.getElementById('contenido').scrollTop = 0;
+    if(nombre==='hoy')        renderHoy();
+    if(nombre==='gastos')     renderGastos();
+    if(nombre==='cobros')     renderCobros();
+    if(nombre==='pendientes') renderPendientes();
+    if(nombre==='resumen')    renderResumen();
+  }
+
+  document.querySelectorAll('.nav-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){ navegar(btn.dataset.pantalla); });
+  });
+
+  /* ============================================================
+     RENDER HOY
+  ============================================================ */
+  function renderHoy() {
+    var h = hoy();
+    var cobrosHoy = estado.cobros
+      .filter(function(c){ return c.fecha === h && (c.estadoCobro==='Cobrado'||c.estadoCobro==='Anticipo recibido'); })
+      .reduce(function(s,c){ return s + c.importe; }, 0);
+    var gastosHoy = estado.gastos
+      .filter(function(g){ return g.fecha === h; })
+      .reduce(function(s,g){ return s + g.importe; }, 0);
+    var resultado = cobrosHoy - gastosHoy;
+
+    document.getElementById('hoy-cobros').textContent = formatEur(cobrosHoy);
+    document.getElementById('hoy-gastos').textContent = formatEur(gastosHoy);
+    var resEl = document.getElementById('hoy-resultado');
+    resEl.textContent = formatEur(resultado);
+    resEl.className = 'balance-resultado-valor' + (resultado>0?' positivo':resultado<0?' negativo':' neutro');
+
+    var numTrabajos    = estado.trabajos.filter(function(t){ return t.fecha===h && t.estado==='Pendiente'; }).length;
+    var numDocs        = estado.gastos.filter(function(g){ return g.fecha===h && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); }).length;
+    var numMatUrgente  = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; }).length;
+    var numCobrosPend  = estado.cobros.filter(function(c){ return c.fecha===h && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura'); }).length;
+
+    document.getElementById('alerta-trabajos-num').textContent  = numTrabajos;
+    document.getElementById('alerta-documentos-num').textContent = numDocs;
+    document.getElementById('alerta-material-num').textContent  = numMatUrgente;
+    document.getElementById('alerta-cobros-num').textContent    = numCobrosPend;
+  }
+
+  document.querySelectorAll('.alerta-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      if(item.dataset.nav) navegar(item.dataset.nav);
+    });
+  });
+
+  /* ============================================================
+     RENDER GASTOS
+  ============================================================ */
+  function renderGastos() {
+    var lista = document.getElementById('lista-gastos');
+    if(!estado.gastos.length){
+      lista.innerHTML = '<div class="lista-vacia">Sin gastos registrados.</div>';
+      return;
+    }
+    var html = '';
+    estado.gastos.slice().sort(function(a,b){ return b.fecha.localeCompare(a.fecha); }).forEach(function(g){
+      html += '<div class="registro-tarjeta">';
+      html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(g.concepto)+'</span><span class="registro-importe">'+formatEur(g.importe)+'</span></div>';
+      html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(g.fecha)+' &middot; '+esc(g.categoria)+'</span><span class="registro-estado '+classeEstadoDoc(g.estadoDocumento)+'">'+esc(g.estadoDocumento)+'</span></div>';
+      html += '</div>';
+    });
+    lista.innerHTML = html;
+  }
+
+  /* ============================================================
+     RENDER COBROS
+  ============================================================ */
+  function renderCobros() {
+    var lista = document.getElementById('lista-cobros');
+    if(!estado.cobros.length){
+      lista.innerHTML = '<div class="lista-vacia">Sin cobros registrados.</div>';
+      return;
+    }
+    var html = '';
+    estado.cobros.slice().sort(function(a,b){ return b.fecha.localeCompare(a.fecha); }).forEach(function(c){
+      html += '<div class="registro-tarjeta">';
+      html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(c.cliente)+' &mdash; '+esc(c.concepto)+'</span><span class="registro-importe">'+formatEur(c.importe)+'</span></div>';
+      html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(c.fecha)+' &middot; '+esc(c.formaCobro)+'</span><span class="registro-estado '+classeEstadoCobro(c.estadoCobro)+'">'+esc(c.estadoCobro)+'</span></div>';
+      html += '</div>';
+    });
+    lista.innerHTML = html;
+  }
+
+  /* ============================================================
+     RENDER PENDIENTES
+  ============================================================ */
+  function renderPendientes() {
+    renderListaMaterial();
+    renderListaTrabajos();
+  }
+
+  function renderListaMaterial() {
+    var lista = document.getElementById('lista-material');
+    if(!estado.material.length){
+      lista.innerHTML = '<div class="lista-vacia">Sin material pendiente.</div>';
+      return;
+    }
+    var html = '';
+    estado.material.forEach(function(m){
+      var resuelto = m.estado === 'Comprado';
+      html += '<div class="registro-tarjeta'+(resuelto?' resuelto':'')+'">';
+      html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(m.descripcion)+'</span>';
+      if(m.urgente && !resuelto) html += '<span class="registro-estado estado-error">Urgente</span>';
+      html += '</div>';
+      if(m.paratrabajo) html += '<div class="registro-meta" style="margin-top:4px;font-size:11px;color:#9CA3AF">Para: '+esc(m.paratrabajo)+'</div>';
+      html += '<div class="registro-fila-secundaria" style="margin-top:6px"><span class="registro-estado '+classeEstadoItem(m.estado)+'">'+esc(m.estado)+'</span>';
+      if(!resuelto) html += '<button class="btn btn-secundario btn-sm" data-mat-id="'+m.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar comprado</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    lista.innerHTML = html;
+    lista.querySelectorAll('[data-mat-id]').forEach(function(btn){
+      btn.addEventListener('click', function(){ marcarMaterialComprado(btn.dataset.matId); });
+    });
+  }
+
+  function renderListaTrabajos() {
+    var lista = document.getElementById('lista-trabajos');
+    if(!estado.trabajos.length){
+      lista.innerHTML = '<div class="lista-vacia">Sin trabajos pendientes de facturar.</div>';
+      return;
+    }
+    var html = '';
+    estado.trabajos.forEach(function(t){
+      var resuelto = t.estado === 'Facturado';
+      html += '<div class="registro-tarjeta'+(resuelto?' resuelto':'')+'">';
+      html += '<div class="registro-fila-principal"><span class="registro-concepto">'+esc(t.cliente)+' &mdash; '+esc(t.descripcion)+'</span><span class="registro-importe">'+formatEur(t.importeEstimado)+'</span></div>';
+      html += '<div class="registro-fila-secundaria"><span class="registro-meta">'+fechaLegible(t.fecha)+'</span><span class="registro-estado '+classeEstadoItem(t.estado)+'">'+esc(t.estado)+'</span></div>';
+      if(!resuelto) html += '<div class="registro-accion"><button class="btn btn-secundario btn-sm" data-trab-id="'+t.id+'" style="min-height:32px;font-size:11px;padding:4px 10px;width:auto">Marcar facturado</button></div>';
+      html += '</div>';
+    });
+    lista.innerHTML = html;
+    lista.querySelectorAll('[data-trab-id]').forEach(function(btn){
+      btn.addEventListener('click', function(){ marcarTrabajoFacturado(btn.dataset.trabId); });
+    });
+  }
+
+  function marcarMaterialComprado(id) {
+    estado.material.forEach(function(m){ if(m.id===id) m.estado='Comprado'; });
+    guardar();
+    renderListaMaterial();
+    renderHoy();
+  }
+
+  function marcarTrabajoFacturado(id) {
+    estado.trabajos.forEach(function(t){ if(t.id===id) t.estado='Facturado'; });
+    guardar();
+    renderListaTrabajos();
+    renderHoy();
+  }
+
+  /* ============================================================
+     RENDER RESUMEN
+  ============================================================ */
+  function poblarSelectorMes() {
+    var sel = document.getElementById('resumen-mes');
+    var meses = obtenerMesesDisponibles();
+    var mc = mesActual();
+    if(meses.indexOf(mc) === -1) meses.unshift(mc);
+    sel.innerHTML = '';
+    meses.forEach(function(m){
+      var opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = mesLegible(m);
+      if(m === mc) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function obtenerMesesDisponibles() {
+    var set = {};
+    estado.gastos.forEach(function(g){   if(g.fecha) set[mesStr(g.fecha)]=1; });
+    estado.cobros.forEach(function(c){   if(c.fecha) set[mesStr(c.fecha)]=1; });
+    estado.trabajos.forEach(function(t){ if(t.fecha) set[mesStr(t.fecha)]=1; });
+    return Object.keys(set).sort().reverse();
+  }
+
+  function renderResumen() {
+    poblarSelectorMes();
+    var mes = document.getElementById('resumen-mes').value || mesActual();
+    calcularResumen(mes);
+    // ocultar fallback al cambiar de pantalla
+    document.getElementById('clipboardFallback').classList.remove('visible');
+  }
+
+  function calcularResumen(mes) {
+    var totalCobros = estado.cobros
+      .filter(function(c){ return mesStr(c.fecha)===mes && (c.estadoCobro==='Cobrado'||c.estadoCobro==='Anticipo recibido'); })
+      .reduce(function(s,c){ return s+c.importe; }, 0);
+    var totalGastos = estado.gastos
+      .filter(function(g){ return mesStr(g.fecha)===mes; })
+      .reduce(function(s,g){ return s+g.importe; }, 0);
+    var balance = totalCobros - totalGastos;
+
+    document.getElementById('res-total-cobros').textContent = formatEur(totalCobros);
+    document.getElementById('res-total-gastos').textContent = formatEur(totalGastos);
+    var balEl = document.getElementById('res-balance');
+    balEl.textContent = formatEur(balance);
+    balEl.className = 'balance-resultado-valor' + (balance>0?' positivo':balance<0?' negativo':' neutro');
+    balEl.style.fontSize = '18px';
+
+    // Documentación pendiente
+    var docsPend = estado.gastos.filter(function(g){
+      return mesStr(g.fecha)===mes && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura');
+    }).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
+    var docsEl = document.getElementById('res-docs-pendientes');
+    docsEl.innerHTML = docsPend.length
+      ? docsPend.map(function(g){
+          return '<div class="resumen-item"><span class="resumen-item-texto">'+fechaLegible(g.fecha)+' &mdash; '+esc(g.concepto)+'</span><span class="resumen-item-importe">'+formatEur(g.importe)+'</span></div>';
+        }).join('')
+      : '<div class="resumen-vacio">Sin documentación pendiente.</div>';
+
+    // Cobros pendientes
+    var cobrosPend = estado.cobros.filter(function(c){
+      return mesStr(c.fecha)===mes && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura');
+    }).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
+    var cobrosEl = document.getElementById('res-cobros-pendientes');
+    cobrosEl.innerHTML = cobrosPend.length
+      ? cobrosPend.map(function(c){
+          return '<div class="resumen-item"><span class="resumen-item-texto">'+esc(c.cliente)+' &mdash; '+esc(c.concepto)+'</span><span class="resumen-item-importe">'+formatEur(c.importe)+'</span></div>';
+        }).join('')
+      : '<div class="resumen-vacio">Sin cobros pendientes.</div>';
+
+    // Trabajos pendientes
+    var trabajosPend = estado.trabajos.filter(function(t){
+      return mesStr(t.fecha)===mes && t.estado==='Pendiente';
+    }).sort(function(a,b){ return b.fecha.localeCompare(a.fecha); });
+    var trabajosEl = document.getElementById('res-trabajos-pendientes');
+    trabajosEl.innerHTML = trabajosPend.length
+      ? trabajosPend.map(function(t){
+          return '<div class="resumen-item"><span class="resumen-item-texto">'+esc(t.cliente)+' &mdash; '+esc(t.descripcion)+'</span><span class="resumen-item-importe">'+formatEur(t.importeEstimado)+'</span></div>';
+        }).join('')
+      : '<div class="resumen-vacio">Sin trabajos pendientes de facturar.</div>';
+
+    // Material urgente
+    var matUrgente = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; });
+    var matEl = document.getElementById('res-material-urgente');
+    matEl.innerHTML = matUrgente.length
+      ? matUrgente.map(function(m){
+          return '<div class="resumen-item"><span class="resumen-item-texto">'+esc(m.descripcion)+(m.paratrabajo?' &mdash; '+esc(m.paratrabajo):'')+'</span></div>';
+        }).join('')
+      : '<div class="resumen-vacio">Sin material urgente pendiente.</div>';
+  }
+
+  document.getElementById('resumen-mes').addEventListener('change', function(){
+    calcularResumen(this.value);
+    document.getElementById('clipboardFallback').classList.remove('visible');
+  });
+
+  /* ============================================================
+     COPIAR RESUMEN
+  ============================================================ */
+  document.getElementById('btnCopiarResumen').addEventListener('click', function(){
+    var mes = document.getElementById('resumen-mes').value || mesActual();
+    var texto = generarTextoResumen(mes);
+    var fallback = document.getElementById('clipboardFallback');
+    var ta = document.getElementById('clipboardTexto');
+
+    if(navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function(){
+        fallback.classList.remove('visible');
+        mostrarNotif('Resumen copiado');
+      }).catch(function(){
+        ta.value = texto;
+        fallback.classList.add('visible');
+        ta.select();
+        fallback.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    } else {
+      ta.value = texto;
+      fallback.classList.add('visible');
+      ta.select();
+      fallback.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+  });
+
+  function generarTextoResumen(mes) {
+    var totalCobros = estado.cobros
+      .filter(function(c){ return mesStr(c.fecha)===mes; })
+      .reduce(function(s,c){ return s+c.importe; }, 0);
+    var totalGastos = estado.gastos
+      .filter(function(g){ return mesStr(g.fecha)===mes; })
+      .reduce(function(s,g){ return s+g.importe; }, 0);
+    var balance = totalCobros - totalGastos;
+
+    var docsPend     = estado.gastos.filter(function(g){ return mesStr(g.fecha)===mes && (g.estadoDocumento==='Falta ticket'||g.estadoDocumento==='Falta factura'); });
+    var cobrosPend   = estado.cobros.filter(function(c){ return mesStr(c.fecha)===mes && (c.estadoCobro==='Pendiente de cobro'||c.estadoCobro==='Pendiente de factura'); });
+    var trabajosPend = estado.trabajos.filter(function(t){ return mesStr(t.fecha)===mes && t.estado==='Pendiente'; });
+    var matUrgente   = estado.material.filter(function(m){ return m.urgente && m.estado==='Pendiente'; });
+
+    var lineas = [];
+    lineas.push('TÉCNICO AL DÍA — Resumen orientativo');
+    lineas.push('Negocio: Bierzo Instalaciones');
+    lineas.push('Actividad: Climatización, electricidad, fotovoltaica y mantenimiento');
+    lineas.push('Mes: ' + mesLegible(mes));
+    lineas.push('Generado: ' + fechaLegible(hoy()));
+    lineas.push('');
+    lineas.push('--- TOTALES ORIENTATIVOS ---');
+    lineas.push('Total cobros del mes:   ' + formatEur(totalCobros));
+    lineas.push('Total gastos del mes:   ' + formatEur(totalGastos));
+    lineas.push('Balance orientativo:    ' + formatEur(balance));
+    lineas.push('');
+    lineas.push('--- DOCUMENTACIÓN PENDIENTE ---');
+    if(!docsPend.length) {
+      lineas.push('Sin documentación pendiente.');
+    } else {
+      docsPend.forEach(function(g){ lineas.push(fechaLegible(g.fecha) + ' — ' + g.concepto + ' — ' + formatEur(g.importe) + ' [' + g.estadoDocumento + ']'); });
+    }
+    lineas.push('');
+    lineas.push('--- COBROS PENDIENTES ---');
+    if(!cobrosPend.length) {
+      lineas.push('Sin cobros pendientes.');
+    } else {
+      cobrosPend.forEach(function(c){ lineas.push(fechaLegible(c.fecha) + ' — ' + c.cliente + ' — ' + c.concepto + ' — ' + formatEur(c.importe) + ' [' + c.estadoCobro + ']'); });
+    }
+    lineas.push('');
+    lineas.push('--- TRABAJOS PENDIENTES DE FACTURAR ---');
+    if(!trabajosPend.length) {
+      lineas.push('Sin trabajos pendientes.');
+    } else {
+      trabajosPend.forEach(function(t){ lineas.push(fechaLegible(t.fecha) + ' — ' + t.cliente + ' — ' + t.descripcion + ' — ' + formatEur(t.importeEstimado)); });
+    }
+    lineas.push('');
+    lineas.push('--- MATERIAL URGENTE PENDIENTE ---');
+    if(!matUrgente.length) {
+      lineas.push('Sin material urgente pendiente.');
+    } else {
+      matUrgente.forEach(function(m){ lineas.push(m.descripcion + (m.paratrabajo ? ' — Para: ' + m.paratrabajo : '')); });
+    }
+    lineas.push('');
+    lineas.push('---');
+    lineas.push('Información orientativa para revisión interna o gestoría.');
+    lineas.push('No constituye contabilidad oficial ni documento fiscal.');
+    lineas.push('Generado con Técnico al Día (demo).');
+    return lineas.join('\n');
+  }
+
+  /* ============================================================
+     FORMULARIO GASTOS
+  ============================================================ */
+  function abrirFormGasto() {
+    var panel = document.getElementById('form-gasto-panel');
+    panel.style.display = 'block';
+    document.getElementById('gasto-fecha').value       = hoy();
+    document.getElementById('gasto-concepto').value    = '';
+    document.getElementById('gasto-categoria').value   = '';
+    document.getElementById('gasto-importe').value     = '';
+    document.getElementById('gasto-estado-doc').value  = '';
+    document.getElementById('gasto-error').classList.remove('visible');
+    setTimeout(function(){ panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+  }
+
+  function cerrarFormGasto() {
+    document.getElementById('form-gasto-panel').style.display = 'none';
+  }
+
+  document.getElementById('btnAniadirGasto').addEventListener('click', abrirFormGasto);
+  document.getElementById('btnHoyAniadirGasto').addEventListener('click', function(){
+    navegar('gastos');
+    setTimeout(abrirFormGasto, 80);
+  });
+  document.getElementById('btnCancelarGasto').addEventListener('click', cerrarFormGasto);
+  document.getElementById('btnLimpiarGasto').addEventListener('click', function(){
+    document.getElementById('gasto-fecha').value       = hoy();
+    document.getElementById('gasto-concepto').value    = '';
+    document.getElementById('gasto-categoria').value   = '';
+    document.getElementById('gasto-importe').value     = '';
+    document.getElementById('gasto-estado-doc').value  = '';
+    document.getElementById('gasto-error').classList.remove('visible');
+  });
+  document.getElementById('form-gasto-panel').querySelectorAll('input,select').forEach(function(el){
+    el.addEventListener('change', function(){ document.getElementById('gasto-error').classList.remove('visible'); });
+    el.addEventListener('input',  function(){ document.getElementById('gasto-error').classList.remove('visible'); });
+  });
+  document.getElementById('btnGuardarGasto').addEventListener('click', function(){
+    var fecha   = document.getElementById('gasto-fecha').value;
+    var concepto= document.getElementById('gasto-concepto').value.trim();
+    var cat     = document.getElementById('gasto-categoria').value;
+    var importe = parseImporte(document.getElementById('gasto-importe').value);
+    var estadoD = document.getElementById('gasto-estado-doc').value;
+    if(!fecha||!concepto||!cat||isNaN(importe)||importe<=0||!estadoD){
+      document.getElementById('gasto-error').classList.add('visible');
+      return;
+    }
+    estado.gastos.push({ id:genId(), fecha:fecha, concepto:concepto, categoria:cat, importe:importe, estadoDocumento:estadoD });
+    guardar();
+    cerrarFormGasto();
+    renderGastos();
+    renderHoy();
+  });
+
+  /* ============================================================
+     FORMULARIO COBROS
+  ============================================================ */
+  function abrirFormCobro() {
+    var panel = document.getElementById('form-cobro-panel');
+    panel.style.display = 'block';
+    document.getElementById('cobro-fecha').value    = hoy();
+    document.getElementById('cobro-cliente').value  = '';
+    document.getElementById('cobro-concepto').value = '';
+    document.getElementById('cobro-importe').value  = '';
+    document.getElementById('cobro-forma').value    = '';
+    document.getElementById('cobro-estado').value   = '';
+    document.getElementById('cobro-error').classList.remove('visible');
+    setTimeout(function(){ panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+  }
+
+  function cerrarFormCobro() {
+    document.getElementById('form-cobro-panel').style.display = 'none';
+  }
+
+  document.getElementById('btnAniadirCobro').addEventListener('click', abrirFormCobro);
+  document.getElementById('btnHoyAniadirCobro').addEventListener('click', function(){
+    navegar('cobros');
+    setTimeout(abrirFormCobro, 80);
+  });
+  document.getElementById('btnCancelarCobro').addEventListener('click', cerrarFormCobro);
+  document.getElementById('btnLimpiarCobro').addEventListener('click', function(){
+    document.getElementById('cobro-fecha').value    = hoy();
+    document.getElementById('cobro-cliente').value  = '';
+    document.getElementById('cobro-concepto').value = '';
+    document.getElementById('cobro-importe').value  = '';
+    document.getElementById('cobro-forma').value    = '';
+    document.getElementById('cobro-estado').value   = '';
+    document.getElementById('cobro-error').classList.remove('visible');
+  });
+  document.getElementById('form-cobro-panel').querySelectorAll('input,select').forEach(function(el){
+    el.addEventListener('change', function(){ document.getElementById('cobro-error').classList.remove('visible'); });
+    el.addEventListener('input',  function(){ document.getElementById('cobro-error').classList.remove('visible'); });
+  });
+  document.getElementById('btnGuardarCobro').addEventListener('click', function(){
+    var fecha    = document.getElementById('cobro-fecha').value;
+    var cliente  = document.getElementById('cobro-cliente').value.trim();
+    var concepto = document.getElementById('cobro-concepto').value.trim();
+    var importe  = parseImporte(document.getElementById('cobro-importe').value);
+    var forma    = document.getElementById('cobro-forma').value;
+    var estadoC  = document.getElementById('cobro-estado').value;
+    if(!fecha||!cliente||!concepto||isNaN(importe)||importe<=0||!forma||!estadoC){
+      document.getElementById('cobro-error').classList.add('visible');
+      return;
+    }
+    estado.cobros.push({ id:genId(), fecha:fecha, cliente:cliente, concepto:concepto, importe:importe, formaCobro:forma, estadoCobro:estadoC });
+    guardar();
+    cerrarFormCobro();
+    renderCobros();
+    renderHoy();
+  });
+
+  /* ============================================================
+     FORMULARIO MATERIAL
+  ============================================================ */
+  function abrirFormMaterial() {
+    var panel = document.getElementById('form-material-panel');
+    panel.style.display = 'block';
+    document.getElementById('mat-descripcion').value = '';
+    document.getElementById('mat-trabajo').value     = '';
+    document.getElementById('mat-urgente').value     = '';
+    document.getElementById('mat-estado').value      = 'Pendiente';
+    document.getElementById('mat-error').classList.remove('visible');
+    setTimeout(function(){ panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+  }
+
+  function cerrarFormMaterial() {
+    document.getElementById('form-material-panel').style.display = 'none';
+  }
+
+  document.getElementById('btnAniadirMaterial').addEventListener('click', abrirFormMaterial);
+  document.getElementById('btnCancelarMaterial').addEventListener('click', cerrarFormMaterial);
+  document.getElementById('btnLimpiarMaterial').addEventListener('click', function(){
+    document.getElementById('mat-descripcion').value = '';
+    document.getElementById('mat-trabajo').value     = '';
+    document.getElementById('mat-urgente').value     = '';
+    document.getElementById('mat-estado').value      = 'Pendiente';
+    document.getElementById('mat-error').classList.remove('visible');
+  });
+  document.getElementById('form-material-panel').querySelectorAll('input,select').forEach(function(el){
+    el.addEventListener('change', function(){ document.getElementById('mat-error').classList.remove('visible'); });
+    el.addEventListener('input',  function(){ document.getElementById('mat-error').classList.remove('visible'); });
+  });
+  document.getElementById('btnGuardarMaterial').addEventListener('click', function(){
+    var desc    = document.getElementById('mat-descripcion').value.trim();
+    var trabajo = document.getElementById('mat-trabajo').value.trim();
+    var urgVal  = document.getElementById('mat-urgente').value;
+    var estadoM = document.getElementById('mat-estado').value;
+    if(!desc || urgVal===''){
+      document.getElementById('mat-error').classList.add('visible');
+      return;
+    }
+    estado.material.push({ id:genId(), descripcion:desc, paratrabajo:trabajo, urgente:urgVal==='true', estado:estadoM });
+    guardar();
+    cerrarFormMaterial();
+    renderListaMaterial();
+    renderHoy();
+  });
+
+  /* ============================================================
+     FORMULARIO TRABAJOS
+  ============================================================ */
+  function abrirFormTrabajo() {
+    var panel = document.getElementById('form-trabajo-panel');
+    panel.style.display = 'block';
+    document.getElementById('trab-fecha').value       = hoy();
+    document.getElementById('trab-cliente').value     = '';
+    document.getElementById('trab-descripcion').value = '';
+    document.getElementById('trab-importe').value     = '';
+    document.getElementById('trab-estado').value      = 'Pendiente';
+    document.getElementById('trab-error').classList.remove('visible');
+    setTimeout(function(){ panel.scrollIntoView({behavior:'smooth', block:'start'}); }, 50);
+  }
+
+  function cerrarFormTrabajo() {
+    document.getElementById('form-trabajo-panel').style.display = 'none';
+  }
+
+  document.getElementById('btnAniadirTrabajo').addEventListener('click', abrirFormTrabajo);
+  document.getElementById('btnCancelarTrabajo').addEventListener('click', cerrarFormTrabajo);
+  document.getElementById('btnLimpiarTrabajo').addEventListener('click', function(){
+    document.getElementById('trab-fecha').value       = hoy();
+    document.getElementById('trab-cliente').value     = '';
+    document.getElementById('trab-descripcion').value = '';
+    document.getElementById('trab-importe').value     = '';
+    document.getElementById('trab-estado').value      = 'Pendiente';
+    document.getElementById('trab-error').classList.remove('visible');
+  });
+  document.getElementById('form-trabajo-panel').querySelectorAll('input,select').forEach(function(el){
+    el.addEventListener('change', function(){ document.getElementById('trab-error').classList.remove('visible'); });
+    el.addEventListener('input',  function(){ document.getElementById('trab-error').classList.remove('visible'); });
+  });
+  document.getElementById('btnGuardarTrabajo').addEventListener('click', function(){
+    var fecha   = document.getElementById('trab-fecha').value;
+    var cliente = document.getElementById('trab-cliente').value.trim();
+    var desc    = document.getElementById('trab-descripcion').value.trim();
+    var importe = parseImporte(document.getElementById('trab-importe').value);
+    var estadoT = document.getElementById('trab-estado').value;
+    if(!fecha||!cliente||!desc||isNaN(importe)||importe<=0){
+      document.getElementById('trab-error').classList.add('visible');
+      return;
+    }
+    estado.trabajos.push({ id:genId(), cliente:cliente, descripcion:desc, importeEstimado:importe, fecha:fecha, estado:estadoT });
+    guardar();
+    cerrarFormTrabajo();
+    renderListaTrabajos();
+    renderHoy();
+  });
+
+  /* ============================================================
+     RESTAURAR DEMO
+  ============================================================ */
+  document.getElementById('btnRestaurar').addEventListener('click', function(){
+    cerrarFormGasto();
+    cerrarFormCobro();
+    cerrarFormMaterial();
+    cerrarFormTrabajo();
+    document.getElementById('clipboardFallback').classList.remove('visible');
+    restaurarDemoData();
+    navegar('hoy');
+    mostrarNotif('Demo restaurada');
+  });
+
+  /* ============================================================
+     ESCAPE HTML
+  ============================================================ */
+  function esc(str) {
+    if(!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#x27;');
+  }
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  cargar();
+  if(!estado.gastos.length && !estado.cobros.length && !estado.material.length && !estado.trabajos.length) {
+    restaurarDemoData();
+  }
+  navegar('hoy');
+
+})();
+</script>
+</body>
+</html>
